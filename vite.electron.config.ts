@@ -12,6 +12,9 @@ const external = [
 ];
 
 const config: UserConfig = {
+  define: {
+    "process.env": "process.env"
+  },
   build: {
     outDir: "dist",
     emptyOutDir: false,
