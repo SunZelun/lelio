@@ -1,0 +1,60 @@
+{
+  "name": "lelio",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local-first desktop command center for coding agents.",
+  "main": "dist/main/main.cjs",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "npm run build:electron && concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "build": "npm run typecheck && npm run build:electron && npm run build:renderer",
+    "build:electron": "vite build --config vite.electron.config.ts",
+    "build:renderer": "vite build",
+    "package:mac": "npm run build && electron-builder --mac dir",
+    "package:mac:dmg": "npm run build && electron-builder --mac dmg",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "build": {
+    "appId": "dev.lex.lelio",
+    "productName": "Lelio",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dir"
+      ],
+      "icon": "build/icon.icns"
+    }
+  },
+  "dependencies": {
+    "@github/copilot-sdk": "^1.0.0-beta.4",
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^42.1.0",
+    "electron-builder": "^26.8.1",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2",
+    "vitest": "^3.0.9",
+    "wait-on": "^8.0.3"
+  }
+}
