@@ -10,16 +10,19 @@ import {
   Database,
   Download,
   FileCheck2,
+  FolderOpen,
   FolderPlus,
   GitBranch,
   Home,
   Inbox,
+  Loader2,
   MessageSquare,
   PauseCircle,
   Pencil,
   Play,
   RefreshCw,
   Save,
+  Search,
   Settings,
   ShieldAlert,
   Sparkles,
@@ -40,6 +43,7 @@ import type {
   DatabaseHealth,
   LocalBackup,
   Project,
+  ProjectAnalysis,
   ProjectCreateInput,
   ProjectMemory,
   ProjectUpdateInput,
@@ -2858,6 +2862,44 @@ function ProjectAddForm(props: { adding: boolean; onAdd: (input: ProjectCreateIn
     testCommand: "",
     buildCommand: ""
   });
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysis, setAnalysis] = useState<ProjectAnalysis | null>(null);
+
+  async function browse(): Promise<void> {
+    try {
+      const result = await window.lelio.selectProjectFolder();
+      if (!result.ok || result.data.canceled || !result.data.path) {
+        return;
+      }
+      const selectedPath = result.data.path;
+      setForm((prev) => ({ ...prev, path: selectedPath }));
+      setAnalyzing(true);
+      setAnalysis(null);
+      try {
+        const analysisResult = await window.lelio.analyzeProjectFolder({ path: selectedPath });
+        if (analysisResult.ok) {
+          const a = analysisResult.data;
+          setAnalysis(a);
+          setForm((prev) => {
+            if (prev.path !== selectedPath) return prev;
+            return {
+              ...prev,
+              name: a.name ?? prev.name,
+              packageManager: a.packageManager ?? prev.packageManager,
+              testCommand: a.testCommand ?? prev.testCommand,
+              buildCommand: a.buildCommand ?? prev.buildCommand
+            };
+          });
+        }
+      } catch {
+        // Analysis is best-effort; form is still usable with the path
+      } finally {
+        setAnalyzing(false);
+      }
+    } catch {
+      // Dialog cancelled or error
+    }
+  }
 
   function submit(): void {
     if (!form.path.trim()) {
@@ -2871,14 +2913,36 @@ function ProjectAddForm(props: { adding: boolean; onAdd: (input: ProjectCreateIn
       buildCommand: form.buildCommand.trim() || undefined
     });
     setForm({ path: "", name: "", packageManager: "", testCommand: "", buildCommand: "" });
+    setAnalysis(null);
   }
+
+  const detailLine = analysis
+    ? [
+        analysis.languages.length > 0 ? analysis.languages.join(", ") : null,
+        analysis.framework,
+        analysis.description
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : null;
 
   return (
     <div className="project-form">
       <label>
         Path
-        <input value={form.path} onChange={(event) => setForm({ ...form, path: event.target.value })} placeholder="/Users/me/project" />
+        <div className="path-row">
+          <input
+            value={form.path}
+            onChange={(event) => setForm({ ...form, path: event.target.value })}
+            placeholder="/Users/me/project"
+          />
+          <button className="browse-btn" onClick={browse} disabled={analyzing} title="Browse for folder">
+            {analyzing ? <Loader2 size={16} className="spin" /> : <FolderOpen size={16} />}
+            Browse
+          </button>
+        </div>
       </label>
+      {detailLine ? <div className="analysis-detail">{detailLine}</div> : null}
       <label>
         Name
         <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Auto from folder" />
@@ -2895,7 +2959,7 @@ function ProjectAddForm(props: { adding: boolean; onAdd: (input: ProjectCreateIn
         Build command
         <input value={form.buildCommand} onChange={(event) => setForm({ ...form, buildCommand: event.target.value })} placeholder="npm run build" />
       </label>
-      <button className="primary-action" disabled={props.adding || !form.path.trim()} onClick={submit}>
+      <button className="primary-action" disabled={props.adding || analyzing || !form.path.trim()} onClick={submit}>
         <FolderPlus size={16} />
         Add
       </button>

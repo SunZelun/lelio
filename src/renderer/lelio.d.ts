@@ -17,6 +17,7 @@ import type {
   DatabaseHealth,
   DiagnosticsExport,
   AgentSkillLinkInput,
+  FolderSelectResult,
   IpcResult,
   LocalSkill,
   LocalBackup,
@@ -24,6 +25,8 @@ import type {
   NotificationTestResult,
   OnboardingSampleProjectResult,
   Project,
+  ProjectAnalysis,
+  ProjectAnalyzeInput,
   ProjectCreateInput,
   ProjectIdInput,
   ProjectMemory,
@@ -67,6 +70,8 @@ export type LelioApi = {
   updateProject: (input: ProjectUpdateInput) => Promise<IpcResult<Project>>;
   removeProject: (input: ProjectIdInput) => Promise<IpcResult<{ removed: true; id: string }>>;
   refreshProjectGitStatus: (input: ProjectIdInput) => Promise<IpcResult<Project>>;
+  selectProjectFolder: () => Promise<IpcResult<FolderSelectResult>>;
+  analyzeProjectFolder: (input: ProjectAnalyzeInput) => Promise<IpcResult<ProjectAnalysis>>;
   listTasks: () => Promise<IpcResult<Task[]>>;
   createTask: (input: TaskCreateInput) => Promise<IpcResult<Task>>;
   updateTask: (input: TaskUpdateInput) => Promise<IpcResult<Task>>;

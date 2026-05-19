@@ -1,4 +1,4 @@
-import { ipcMain, type IpcMainInvokeEvent } from "electron";
+import { BrowserWindow, dialog, ipcMain, type IpcMainInvokeEvent } from "electron";
 import { z } from "zod";
 import type { IpcChannel, IpcFailure, IpcRequest, IpcResult } from "../../shared/ipc";
 import { IPC_CHANNELS } from "../../shared/ipc";
@@ -8,6 +8,7 @@ import {
   BackupCreateInputSchema,
   BackupRestoreInputSchema,
   CleanupExecuteInputSchema,
+  ProjectAnalyzeInputSchema,
   ProjectCreateSchema,
   ProjectIdSchema,
   ProjectSkillLinkSchema,
@@ -38,6 +39,7 @@ import {
   type ProjectIdInput,
   type ProjectSkillLinkInput,
   type ProjectUpdateInput,
+  type ProjectAnalyzeInput,
   type AppSettingsPatch,
   type RendererErrorPayload,
   type SkillCreateInput,
@@ -65,6 +67,7 @@ import type { RuntimeRegistry } from "../runtime/runtimeRegistry";
 import type { SettingsStore } from "../settings/settingsStore";
 import type { SqliteDatabase } from "../db/sqlite";
 import type { ProjectStore } from "../projects/projectStore";
+import { analyzeProjectDirectory } from "../projects/projectAnalyzer";
 import type { SessionStore } from "../sessions/sessionStore";
 import type { TaskStore } from "../tasks/taskStore";
 import type { ProjectMemoryStore } from "../memory/projectMemoryStore";
@@ -117,6 +120,20 @@ export function registerIpcHandlers(services: Services): void {
   );
   registerHandler(services, IPC_CHANNELS.projectRefreshGitStatus, ProjectIdSchema, (input: ProjectIdInput, correlationId) =>
     services.projectStore.refreshGitStatus(input.id, correlationId)
+  );
+  registerHandler(services, IPC_CHANNELS.projectSelectFolder, z.undefined(), async (_input, _correlationId, event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    const result = await dialog.showOpenDialog(win ?? BrowserWindow.getFocusedWindow()!, {
+      properties: ["openDirectory"],
+      title: "Select project folder"
+    });
+    if (result.canceled || result.filePaths.length === 0) {
+      return { canceled: true, path: null };
+    }
+    return { canceled: false, path: result.filePaths[0] };
+  });
+  registerHandler(services, IPC_CHANNELS.projectAnalyze, ProjectAnalyzeInputSchema, (input: ProjectAnalyzeInput) =>
+    analyzeProjectDirectory(input.path)
   );
   registerHandler(services, IPC_CHANNELS.taskList, z.undefined(), () => services.taskStore.list());
   registerHandler(services, IPC_CHANNELS.taskCreate, TaskCreateSchema, (input: TaskCreateInput, correlationId) =>

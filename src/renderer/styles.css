@@ -480,6 +480,53 @@ h2 {
   background: #14171c;
 }
 
+.project-form .path-row {
+  display: flex;
+  gap: 6px;
+}
+
+.project-form .path-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.browse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  background: transparent;
+  color: #3b82f6;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.browse-btn:hover {
+  background: #3b82f620;
+}
+
+.browse-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.analysis-detail {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: #8b949e;
+  padding: 2px 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spin {
+  animation: spin 1s linear infinite;
+}
+
 .project-form label:nth-child(4),
 .project-form label:nth-child(5) {
   grid-column: span 1;

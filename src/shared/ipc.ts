@@ -7,6 +7,8 @@ export const IPC_CHANNELS = {
   projectUpdate: "project:update",
   projectRemove: "project:remove",
   projectRefreshGitStatus: "project:refreshGitStatus",
+  projectSelectFolder: "project:selectFolder",
+  projectAnalyze: "project:analyze",
   taskList: "task:list",
   taskCreate: "task:create",
   taskUpdate: "task:update",

@@ -316,6 +316,31 @@ export const ProjectIdSchema = z.object({
 
 export type ProjectIdInput = z.infer<typeof ProjectIdSchema>;
 
+export const FolderSelectResultSchema = z.object({
+  canceled: z.boolean(),
+  path: z.string().nullable()
+});
+
+export type FolderSelectResult = z.infer<typeof FolderSelectResultSchema>;
+
+export const ProjectAnalyzeInputSchema = z.object({
+  path: z.string().trim().min(1)
+});
+
+export type ProjectAnalyzeInput = z.infer<typeof ProjectAnalyzeInputSchema>;
+
+export const ProjectAnalysisSchema = z.object({
+  name: z.string().nullable(),
+  packageManager: z.string().nullable(),
+  testCommand: z.string().nullable(),
+  buildCommand: z.string().nullable(),
+  description: z.string().nullable(),
+  languages: z.array(z.string()),
+  framework: z.string().nullable()
+});
+
+export type ProjectAnalysis = z.infer<typeof ProjectAnalysisSchema>;
+
 export const TaskStatusSchema = z.enum(["open", "in-progress", "blocked", "review", "done", "cancelled"]);
 export type TaskStatus = z.infer<typeof TaskStatusSchema>;
 
